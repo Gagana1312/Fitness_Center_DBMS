@@ -123,7 +123,7 @@ public class Main {
                 if (rs.next()) {
                     int idstaff = rs.getInt("idstaff");
                     System.out.println("Login successful, Welcome Staff!");
-                    System.out.println("ID: "+idstaff);
+                    System.out.println("ID: " + idstaff);
                     staffSession(idstaff);
                 } else {
                     System.out.println("Invalid credentials. Please try again.");
@@ -358,7 +358,6 @@ public class Main {
             System.out.println("1. Register new Activity");
             System.out.println("2. Delete existing activity");
             System.out.println("3. View your locker");
-            System.out.println("4. Choose a Locker_Type");
             System.out.println("5. View Bill");
             System.out.println("6. Update User details");
             System.out.println("7. Logout");
@@ -837,18 +836,18 @@ public class Main {
 
             } else if (userOption == 2) {
                 while (true) {
-                System.out.println("");
-                System.out.println("Welcome to Locker Panel");
-                System.out.println("");
-                System.out.println("1. Add a new Locker");
-                System.out.println("2. Delete existing Locker");
-                System.out.println("3. Assign existing Lockers");
-                System.out.println("4. Display all Lockers");
-                System.out.println("5. Back");
-                System.out.println("Please enter your choice: ");
+                    System.out.println("");
+                    System.out.println("Welcome to Locker Panel");
+                    System.out.println("");
+                    System.out.println("1. Add a new Locker");
+                    System.out.println("2. Delete existing Locker");
+                    System.out.println("3. Assign existing Lockers");
+                    System.out.println("4. Display all Lockers");
+                    System.out.println("5. Back");
+                    System.out.println("Please enter your choice: ");
 
-                int clientUserOption = scanner.nextInt();
-                     switch (clientUserOption) {
+                    int clientUserOption = scanner.nextInt();
+                    switch (clientUserOption) {
                         case 1:
                             AddLocker(idstaff);
                             break;
@@ -873,7 +872,7 @@ public class Main {
                 }
             } else if (userOption == 3) {
                 // Equipment Panel
-                while(true) {
+                while (true) {
                     System.out.println("\nWelcome to Equipment Panel");
                     System.out.println("1. Add an equipment");
                     System.out.println("2. Delete an equipment");
@@ -917,7 +916,6 @@ public class Main {
                     System.out.println("5. Back");
                     System.out.println("Please enter your choice: ");
                     int aOption = scanner.nextInt();
-
                     switch (aOption) {
                         case 1:
                             createActivity();
@@ -977,9 +975,9 @@ public class Main {
                         break;
                     }
                 }
-            } else if (userOption == 6){
-                    staffSessionChanges(idstaff);
-            }else if (userOption == 7) {
+            } else if (userOption == 6) {
+                staffSessionChanges(idstaff);
+            } else if (userOption == 7) {
                 System.out.println("Main Menu");
                 break;
             } else {
@@ -1076,6 +1074,7 @@ public class Main {
             System.out.println("Error retrieving user details: " + e.getMessage());
         }
     }
+
     public static void AddLocker(int staffId) {
         try {
             System.out.println("Creating a new locker...");
@@ -1305,7 +1304,6 @@ public class Main {
     }
 
 
-
     private static void deleteEquipment() {
         System.out.println("\nRemove an Equipment");
         viewAllEquipmentBasic();
@@ -1401,18 +1399,15 @@ public class Main {
         String roomNo = scanner.nextLine();
         System.out.print("Enter activity rate: ");
         String price = scanner.nextLine();
-
-        displayAllTrainers();
-        System.out.print("Enter Trainer ID being assigned: ");
-        int trainer_id = scanner.nextInt();
-        String query = "CALL activity_reg(?, ?, ?, ? )";
+//        displayAllTrainers();
+//        System.out.print("Enter Trainer ID being assigned: ");
+//        int trainer_id = scanner.nextInt();
+        String query = "CALL activity_reg(?, ?, ?, null )";
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, name);
             stmt.setString(2, roomNo);
             stmt.setString(3, price);
-            stmt.setInt(4, trainer_id);
             stmt.executeUpdate();
-            conn.commit();
             System.out.println("New Activity has been created!");
             System.out.println("Updated all activities:");
             viewAllActivities();
@@ -1458,27 +1453,42 @@ public class Main {
                         rs.getString("price"));
             }
             System.out.println("---------------------------------------------------------------");
-
-            // Additional logic for viewing activities without trainers
-            System.out.println("\nViewing Activities without Trainers:");
-            String queryWithoutTrainer = "SELECT Activity_without_trainers()";
-            try (PreparedStatement stmtWithoutTrainer = conn.prepareStatement(queryWithoutTrainer);
-                 ResultSet rsWithoutTrainer = stmtWithoutTrainer.executeQuery()) {
-                System.out.printf("| %-30s |%n", "Activity without Trainers");
-                System.out.println("------------------------------");
-                while (rsWithoutTrainer.next()) {
-                    System.out.printf("| %-30s |%n", rsWithoutTrainer.getString(1));
-                }
-                System.out.println("------------------------------");
-            }
-
         } catch (SQLException e) {
             System.out.println("Error viewing activities: " + e.getMessage());
         }
     }
 
+    private static void activitiesTable() {
+        // Define the query to select activities with a NULL trainer
+        String query = "SELECT idactivity, name, room_no, price, idtrainer FROM activity WHERE idtrainer IS NULL";
+
+        // Use a try-with-resources statement to ensure resources are closed properly
+        try (PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            // Print header for the table
+            System.out.printf("| %-10s | %-20s | %-10s | %-8s | %-10s |%n", "Activity ID", "Activity Name", "Room Number", "Rate", "Trainer ID");
+            System.out.println("---------------------------------------------------------------");
+
+            // Loop through the result set and print each row
+            while (rs.next()) {
+                System.out.printf("| %-10s | %-20s | %-10s | %-8s | %-10s |%n",
+                        rs.getInt("idactivity"),
+                        rs.getString("name"),
+                        rs.getString("room_no"),
+                        rs.getString("price"),
+                        rs.getString("idtrainer")); // Use `getString` to handle NULL values gracefully
+            }
+            System.out.println("---------------------------------------------------------------");
+
+        } catch (SQLException e) {
+            System.out.println("Error retrieving activities: " + e.getMessage());
+        }
+    }
+
+
     private static void displayAllActivitiesForSelection() {
-        String query = "SELECT idactivity, name, room_no, price FROM activity";
+        String query = "SELECT idactivity, name, room_no, price FROM activity where idtrainer IS NULL";
         try (PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
             System.out.printf("| %-10s | %-20s | %-10s | %-8s |%n", "Activity ID", "Activity Name", "Room Number", "Rate");
@@ -1498,7 +1508,7 @@ public class Main {
 
     private static void updateActivity() {
         System.out.println("\nUpdate Activity");
-        displayAllActivitiesForSelection();
+        viewAllActivities();
         System.out.print("Activity ID: ");
         int idActivity = Integer.parseInt(scanner.nextLine());
         System.out.print("Activity Name: ");
@@ -1507,15 +1517,12 @@ public class Main {
         String roomNo = scanner.nextLine();
         System.out.print("Enter the rate of the activity: ");
         String rate = scanner.nextLine();
-        System.out.print("Enter Trainer ID: ");
-        int trainerId = Integer.parseInt(scanner.nextLine());
-
-        String query = "UPDATE activity SET name = ?, room_no = ?, price = ?, idtrainer = ? WHERE idactivity = ?";
+        String query = "UPDATE activity SET name = ?, room_no = ?, price = ?, idtrainer = NULL WHERE idactivity = ?";
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, name);
             stmt.setString(2, roomNo);
             stmt.setString(3, rate);
-            stmt.setInt(4, trainerId);
+            stmt.setNull(4, java.sql.Types.INTEGER);
             stmt.setInt(5, idActivity);
             stmt.executeUpdate();
             System.out.println(name + " Updated Successfully!");
@@ -1525,6 +1532,7 @@ public class Main {
             System.out.println("Error updating activity: " + e.getMessage());
         }
     }
+
     private static void createTrainer() {
         System.out.println("\nCreate a New Trainer");
         System.out.print("Enter Trainer name: ");
@@ -1549,7 +1557,7 @@ public class Main {
     private static void removeTrainer() {
         System.out.println("\nRemove a Trainer");
         System.out.println("\nViewing all Trainers");
-        displayAllTrainers();
+        viewAllTrainers();
 
         System.out.print("Enter the Trainer ID: ");
         int trainerId = Integer.parseInt(scanner.nextLine());
@@ -1563,7 +1571,7 @@ public class Main {
             } else {
                 System.out.println(trainerId + " trainer has been deleted successfully");
                 System.out.println("\nViewing all Trainers");
-                displayAllTrainers();
+                viewAllTrainers();
             }
         } catch (SQLException e) {
             System.out.println("Error removing trainer: " + e.getMessage());
@@ -1573,26 +1581,8 @@ public class Main {
     private static void assignTrainer() {
         System.out.println("\nAssign Trainer to an Activity");
         System.out.println("\nAvailable Trainers:");
-        displayAllTrainers();
-
-        System.out.println("\nAvailable Activities without a Trainer:");
-        String activityQuery = "SELECT idactivity, name, room_no, price FROM activity WHERE idtrainer = null";
-        try (PreparedStatement stmt = conn.prepareStatement(activityQuery);
-             ResultSet rs = stmt.executeQuery()) {
-            System.out.printf("| %-10s | %-20s | %-10s | %-8s |%n", "Activity ID", "Activity Name", "Room No.", "Rate");
-            System.out.println("----------------------------------------------------------");
-            while (rs.next()) {
-                System.out.printf("| %-10s | %-20s | %-10s | %-8s |%n",
-                        rs.getInt("idactivity"),
-                        rs.getString("name"),
-                        rs.getString("room_no"),
-                        rs.getString("price"));
-            }
-            System.out.println("----------------------------------------------------------");
-        } catch (SQLException e) {
-            System.out.println("Error displaying available activities: " + e.getMessage());
-        }
-
+        viewAllTrainers();
+        displayAllActivitiesForSelection();
         System.out.print("Activity ID to be updated: ");
         int activityId = Integer.parseInt(scanner.nextLine());
         System.out.print("Enter Trainer ID: ");
@@ -1603,14 +1593,15 @@ public class Main {
             stmt.setInt(1, trainerId);
             stmt.setInt(2, activityId);
             stmt.executeUpdate();
-            conn.commit();
             System.out.println("Updated Successfully!");
             System.out.println("\nViewing Updated Trainer Data");
-            viewAllActivities();
+            activitiesTable();
+
         } catch (SQLException e) {
-            System.out.println("Error assigning trainer: " + e.getMessage());
+            System.out.println("Error displaying activities: " + e.getMessage());
         }
     }
+
 
     private static void viewAllTrainers() {
         System.out.println("\n Trainers:");
@@ -1636,23 +1627,23 @@ public class Main {
         }
     }
 
-    private static void displayAllTrainers() {
-        String query = "SELECT idtrainer, name, age, phone_number FROM trainer";
-        try (PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-            System.out.printf("| %-10s | %-20s | %-5s | %-15s |%n", "Trainer ID", "Trainer Name", "Age", "Phone Number");
-            System.out.println("-----------------------------------------------------------");
-            while (rs.next()) {
-                System.out.printf("| %-10s | %-20s | %-5s | %-15s |%n",
-                        rs.getInt("idtrainer"),
-                        rs.getString("name"),
-                        rs.getString("age"),
-                        rs.getString("phone_number"));
-            }
-            System.out.println("-----------------------------------------------------------");
-        } catch (SQLException e) {
-            System.out.println("Error displaying trainers: " + e.getMessage());
-        }
-    }
+//    private static void displayAllTrainers() {
+//        String query = "SELECT idtrainer, name, age, phone_number FROM trainer";
+//        try (PreparedStatement stmt = conn.prepareStatement(query);
+//             ResultSet rs = stmt.executeQuery()) {
+//            System.out.printf("| %-10s | %-20s | %-5s | %-15s |%n", "Trainer ID", "Trainer Name", "Age", "Phone Number");
+//            System.out.println("-----------------------------------------------------------");
+//            while (rs.next()) {
+//                System.out.printf("| %-10s | %-20s | %-5s | %-15s |%n",
+//                        rs.getInt("idtrainer"),
+//                        rs.getString("name"),
+//                        rs.getString("age"),
+//                        rs.getString("phone_number"));
+//            }
+//            System.out.println("-----------------------------------------------------------");
+//        } catch (SQLException e) {
+//            System.out.println("Error displaying trainers: " + e.getMessage());
+//        }
+//    }
 
 }
