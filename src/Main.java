@@ -44,7 +44,8 @@ public class Main {
 
             switch (option) {
                 case 1:
-                    authAdmin(); // Admin authentication
+                    authAdmin admin = new authAdmin();
+                    admin.authAdmin(); // Admin authentication
                     break;
                 case 2:
                     authStaff(); // Staff authentication
@@ -65,39 +66,39 @@ public class Main {
         }
     }
 
-    private static void authAdmin() {
-        System.out.println("\nAdmin Login");
-
-        System.out.print("Email ID: ");
-        String emailId = scanner.nextLine();
-
-        // Validate the email format
-        if (!Pattern.matches(EMAIL_REGEX, emailId)) {
-            System.out.println("Invalid email format. Try again.");
-            return;
-        }
-
-        System.out.print("Password: ");
-        String password = scanner.nextLine(); // Get password input
-
-        // SQL query to verify email and password
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM marino.admin WHERE emailid = ? AND password = ?")) {
-            stmt.setString(1, emailId);
-            stmt.setString(2, password);
-
-            // Execute the query and check for results
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    System.out.println("\nWelcome " + emailId);
-                    adminSession(); // Proceed to admin session
-                } else {
-                    System.out.println("Login not recognized");
-                }
-            }
-        } catch (SQLException e) {
-            System.out.println("Error during admin login: " + e.getMessage());
-        }
-    }
+//    private static void authAdmin() {
+//        System.out.println("\nAdmin Login");
+//
+//        System.out.print("Email ID: ");
+//        String emailId = scanner.nextLine();
+//
+//        // Validate the email format
+//        if (!Pattern.matches(EMAIL_REGEX, emailId)) {
+//            System.out.println("Invalid email format. Try again.");
+//            return;
+//        }
+//
+//        System.out.print("Password: ");
+//        String password = scanner.nextLine(); // Get password input
+//
+//        // SQL query to verify email and password
+//        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM marino.admin WHERE emailid = ? AND password = ?")) {
+//            stmt.setString(1, emailId);
+//            stmt.setString(2, password);
+//
+//            // Execute the query and check for results
+//            try (ResultSet rs = stmt.executeQuery()) {
+//                if (rs.next()) {
+//                    System.out.println("\nWelcome " + emailId);
+//                    adminSession(); // Proceed to admin session
+//                } else {
+//                    System.out.println("Login not recognized");
+//                }
+//            }
+//        } catch (SQLException e) {
+//            System.out.println("Error during admin login: " + e.getMessage());
+//        }
+//    }
 
 
     private static void authStaff() {
@@ -209,147 +210,147 @@ public class Main {
         }
     }
 
-    private static void adminSession() {
-        while (true) {
-            System.out.println("\nWelcome to Admin Panel");
-            System.out.println("1. Register new admin");
-            System.out.println("2. Delete existing admin");
-            System.out.println("3. Read existing admins");
-            System.out.println("4. Update existing admin");
-            System.out.println("5. Back");
-
-            System.out.print("Option: ");
-            String option = scanner.nextLine();
-
-            switch (option) {
-                case "1":
-                    registerNewAdmin();
-                    break;
-                case "2":
-                    deleteExistingAdmin();
-                    break;
-                case "3":
-                    readExistingAdmins();
-                    break;
-                case "4":
-                    updateExistingAdmin();
-                    break;
-                case "5":
-                    return; // Exit the admin session
-                default:
-                    System.out.println("Invalid option!");
-                    break;
-            }
-        }
-    }
-
-    private static void registerNewAdmin() {
-        System.out.println("\nRegister New Admin");
-
-        System.out.print("Admin email ID: ");
-        String emailId = scanner.nextLine();
-
-        if (!Pattern.matches(EMAIL_REGEX, emailId)) {
-            System.out.println("Invalid email format, try again!");
-            return;
-        }
-
-        System.out.print("Admin password: ");
-        String password = scanner.nextLine();
-        System.out.print("Admin name: ");
-        String adminName = scanner.nextLine();
-        System.out.print("Admin phone number: ");
-        String phoneNumber = scanner.nextLine();
-
-        if (!Pattern.matches(PHONE_REGEX, phoneNumber)) {
-            System.out.println("Invalid phone number, try again!");
-            return;
-        }
-
-        try (PreparedStatement stmt = conn.prepareStatement("CALL admin_reg(?, ?, ?, ?);")) {
-            stmt.setString(1, adminName);
-            stmt.setString(2, phoneNumber);
-            stmt.setString(3, emailId);
-            stmt.setString(4, password);
-
-            stmt.executeUpdate();
-            System.out.println(emailId + " has been registered as an admin.");
-        } catch (SQLException e) {
-            System.out.println("Error registering admin: " + e.getMessage());
-        }
-    }
-
-    private static void deleteExistingAdmin() {
-        System.out.println("\nDelete Existing Admin Account");
-
-        System.out.print("Admin Email ID: ");
-        String emailId = scanner.nextLine();
-        System.out.print("Password: ");
-        String password = scanner.nextLine();
-
-        try (PreparedStatement stmt = conn.prepareStatement("CALL admin_del(?, ?);")) {
-            stmt.setString(1, emailId);
-            stmt.setString(2, password);
-
-            int rowsAffected = stmt.executeUpdate();
-            if (rowsAffected < 1) {
-                System.out.println("Admin not found.");
-            } else {
-                System.out.println(emailId + " has been deleted!");
-            }
-        } catch (SQLException e) {
-            System.out.println("Error deleting admin: " + e.getMessage());
-        }
-    }
-
-    private static void readExistingAdmins() {
-        System.out.println("\nAll Existing Admin Details");
-
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT * FROM admin;")) {
-
-            System.out.println(String.format("%-10s %-20s %-15s %-20s %-20s", "Admin ID", "Admin Name", "Phone Number", "Email ID", "Password"));
-            System.out.println("------------------------------------------------------------------------");
-
-            while (rs.next()) {
-                System.out.println(String.format("%-10s %-20s %-15s %-20s %-20s",
-                        rs.getInt("idadmin"),
-                        rs.getString("admin_name"),
-                        rs.getString("phone_number"),
-                        rs.getString("emailid"),
-                        rs.getString("password")));
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error reading admin details: " + e.getMessage());
-        }
-    }
-
-    private static void updateExistingAdmin() {
-        System.out.println("\nUpdate Existing Admin Details");
-
-        System.out.print("Admin ID to be updated: ");
-        int adminId = Integer.parseInt(scanner.nextLine());
-        System.out.print("Admin name: ");
-        String adminName = scanner.nextLine();
-        System.out.print("Admin phone number: ");
-        String phoneNumber = scanner.nextLine();
-
-        try (PreparedStatement stmt = conn.prepareStatement("UPDATE admin SET admin_name = ?, phone_number = ? WHERE idadmin = ?;")) {
-            stmt.setString(1, adminName);
-            stmt.setString(2, phoneNumber);
-            stmt.setInt(3, adminId);
-
-            int rowsAffected = stmt.executeUpdate();
-            if (rowsAffected < 1) {
-                System.out.println("No admin found with the provided ID.");
-            } else {
-                System.out.println("Updated Successfully!");
-            }
-        } catch (SQLException e) {
-            System.out.println("Error updating admin details: " + e.getMessage());
-        }
-    }
+//    private static void adminSession() {
+//        while (true) {
+//            System.out.println("\nWelcome to Admin Panel");
+//            System.out.println("1. Register new admin");
+//            System.out.println("2. Delete existing admin");
+//            System.out.println("3. Read existing admins");
+//            System.out.println("4. Update existing admin");
+//            System.out.println("5. Back");
+//
+//            System.out.print("Option: ");
+//            String option = scanner.nextLine();
+//
+//            switch (option) {
+//                case "1":
+//                    registerNewAdmin();
+//                    break;
+//                case "2":
+//                    deleteExistingAdmin();
+//                    break;
+//                case "3":
+//                    readExistingAdmins();
+//                    break;
+//                case "4":
+//                    updateExistingAdmin();
+//                    break;
+//                case "5":
+//                    return; // Exit the admin session
+//                default:
+//                    System.out.println("Invalid option!");
+//                    break;
+//            }
+//        }
+//    }
+//
+//    private static void registerNewAdmin() {
+//        System.out.println("\nRegister New Admin");
+//
+//        System.out.print("Admin email ID: ");
+//        String emailId = scanner.nextLine();
+//
+//        if (!Pattern.matches(EMAIL_REGEX, emailId)) {
+//            System.out.println("Invalid email format, try again!");
+//            return;
+//        }
+//
+//        System.out.print("Admin password: ");
+//        String password = scanner.nextLine();
+//        System.out.print("Admin name: ");
+//        String adminName = scanner.nextLine();
+//        System.out.print("Admin phone number: ");
+//        String phoneNumber = scanner.nextLine();
+//
+//        if (!Pattern.matches(PHONE_REGEX, phoneNumber)) {
+//            System.out.println("Invalid phone number, try again!");
+//            return;
+//        }
+//
+//        try (PreparedStatement stmt = conn.prepareStatement("CALL admin_reg(?, ?, ?, ?);")) {
+//            stmt.setString(1, adminName);
+//            stmt.setString(2, phoneNumber);
+//            stmt.setString(3, emailId);
+//            stmt.setString(4, password);
+//
+//            stmt.executeUpdate();
+//            System.out.println(emailId + " has been registered as an admin.");
+//        } catch (SQLException e) {
+//            System.out.println("Error registering admin: " + e.getMessage());
+//        }
+//    }
+//
+//    private static void deleteExistingAdmin() {
+//        System.out.println("\nDelete Existing Admin Account");
+//
+//        System.out.print("Admin Email ID: ");
+//        String emailId = scanner.nextLine();
+//        System.out.print("Password: ");
+//        String password = scanner.nextLine();
+//
+//        try (PreparedStatement stmt = conn.prepareStatement("CALL admin_del(?, ?);")) {
+//            stmt.setString(1, emailId);
+//            stmt.setString(2, password);
+//
+//            int rowsAffected = stmt.executeUpdate();
+//            if (rowsAffected < 1) {
+//                System.out.println("Admin not found.");
+//            } else {
+//                System.out.println(emailId + " has been deleted!");
+//            }
+//        } catch (SQLException e) {
+//            System.out.println("Error deleting admin: " + e.getMessage());
+//        }
+//    }
+//
+//    private static void readExistingAdmins() {
+//        System.out.println("\nAll Existing Admin Details");
+//
+//        try (Statement stmt = conn.createStatement();
+//             ResultSet rs = stmt.executeQuery("SELECT * FROM admin;")) {
+//
+//            System.out.println(String.format("%-10s %-20s %-15s %-20s %-20s", "Admin ID", "Admin Name", "Phone Number", "Email ID", "Password"));
+//            System.out.println("------------------------------------------------------------------------");
+//
+//            while (rs.next()) {
+//                System.out.println(String.format("%-10s %-20s %-15s %-20s %-20s",
+//                        rs.getInt("idadmin"),
+//                        rs.getString("admin_name"),
+//                        rs.getString("phone_number"),
+//                        rs.getString("emailid"),
+//                        rs.getString("password")));
+//            }
+//
+//        } catch (SQLException e) {
+//            System.out.println("Error reading admin details: " + e.getMessage());
+//        }
+//    }
+//
+//    private static void updateExistingAdmin() {
+//        System.out.println("\nUpdate Existing Admin Details");
+//
+//        System.out.print("Admin ID to be updated: ");
+//        int adminId = Integer.parseInt(scanner.nextLine());
+//        System.out.print("Admin name: ");
+//        String adminName = scanner.nextLine();
+//        System.out.print("Admin phone number: ");
+//        String phoneNumber = scanner.nextLine();
+//
+//        try (PreparedStatement stmt = conn.prepareStatement("UPDATE admin SET admin_name = ?, phone_number = ? WHERE idadmin = ?;")) {
+//            stmt.setString(1, adminName);
+//            stmt.setString(2, phoneNumber);
+//            stmt.setInt(3, adminId);
+//
+//            int rowsAffected = stmt.executeUpdate();
+//            if (rowsAffected < 1) {
+//                System.out.println("No admin found with the provided ID.");
+//            } else {
+//                System.out.println("Updated Successfully!");
+//            }
+//        } catch (SQLException e) {
+//            System.out.println("Error updating admin details: " + e.getMessage());
+//        }
+//    }
 
 
     private static void userSession(int userId) {
