@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="79aba07e-f5cb-4761-9531-41955bc757d4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/authAdmin.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/authStaff.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
     </list>
