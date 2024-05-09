@@ -95,7 +95,8 @@ public class authStaff {
 
                 switch (clientUserOption) {
                     case 1:
-                        authNewUser();
+                        authUser user = new authUser();
+                        user.authNewUser();
                         break;
                     case 2:
                         deleteExistingUser();
@@ -1097,50 +1098,4 @@ public class authStaff {
             System.out.println("Error updating staff details: " + e.getMessage());
         }
     }
-
-
-
-    private static void authNewUser() {
-        System.out.println("\nNew User Registration");
-
-        System.out.print("User Email ID: ");
-        String emailId = scanner.nextLine();
-
-        if (!Pattern.matches(EMAIL_REGEX, emailId)) {
-            System.out.println("Invalid email format, try again.");
-            return;
-        }
-
-        System.out.print("User Password: ");
-        String password = scanner.nextLine();
-
-        System.out.print("First Name: ");
-        String firstName = scanner.nextLine();
-
-        System.out.print("Last Name: ");
-        String lastName = scanner.nextLine();
-
-        System.out.print("Age: ");
-        int age = Integer.parseInt(scanner.nextLine());
-
-        System.out.print("Phone Number: ");
-        String phoneNumber = scanner.nextLine();
-
-        // Insert the new user into the user table
-        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO marino.user (first_name, last_name, age, phone_number, emailid, password) VALUES (?, ?, ?, ?, ?, ?)")) {
-            stmt.setString(1, firstName);
-            stmt.setString(2, lastName);
-            stmt.setInt(3, age);
-            stmt.setString(4, phoneNumber);
-            stmt.setString(5, emailId);
-            stmt.setString(6, password);
-
-            stmt.executeUpdate();
-            System.out.println(firstName + " has been registered as a User.");
-        } catch (SQLException e) {
-            System.out.println("Error registering user: " + e.getMessage());
-        }
-    }
-
-
 }
